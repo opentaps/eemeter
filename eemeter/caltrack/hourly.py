@@ -29,6 +29,7 @@ from ..segmentation import SegmentModel, SegmentedModel, fit_model_segments
 
 
 __all__ = (
+    "CalTRACKHourlyModel",
     "caltrack_hourly_fit_feature_processor",
     "caltrack_hourly_prediction_feature_processor",
     "fit_caltrack_hourly_model_segment",

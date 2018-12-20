@@ -4,7 +4,7 @@ Changelog
 Development
 -----------
 
-* Placeholder
+* Add CalTRACKHourlyModel to `all`.
 
 2.2.4
 -----
