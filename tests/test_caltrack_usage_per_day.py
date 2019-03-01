@@ -1728,7 +1728,66 @@ def test_caltrack_sufficiency_criteria_fail_no_data():
     assert data_sufficiency.criteria_name == ("caltrack_sufficiency_criteria")
 
 
-def test_caltrack_sufficiency_criteria_fail_no_gap():
+def test_caltrack_sufficiency_criteria_fail_not_enough_days():
+    data_quality = pd.DataFrame(
+        {
+            "meter_value": np.ones(362),
+            "temperature_not_null": 24*np.ones(362),
+            "temperature_null": np.zeros(362),
+            "start": pd.date_range(start="2016-01-02", periods=362, freq="D", tz="UTC"),
+        }
+    ).set_index("start")
+    requested_start = pd.Timestamp("2016-01-02").tz_localize("UTC")
+    requested_end = pd.Timestamp("2017-01-01").tz_localize("UTC")
+    data_sufficiency = caltrack_sufficiency_criteria(
+        data_quality,
+        requested_start,
+        requested_end,
+        min_fraction_daily_coverage=0.9,
+        min_fraction_hourly_temperature_coverage_per_period=0.9,
+    )
+    import pdb;pdb.set_trace()
+    assert data_sufficiency.status == "FAIL"
+    assert data_sufficiency.criteria_name == ("caltrack_sufficiency_criteria")
+    assert len(data_sufficiency.warnings) == 4
+
+    warning0 = data_sufficiency.warnings[0]
+    assert warning0.qualified_name == (
+        "eemeter.caltrack_sufficiency_criteria.incorrect_number_of_total_days"
+    )
+    assert warning0.description == (
+        "Total data span does not match the required value."
+    )
+    assert warning0.data == {"num_days": 3, "n_days_total": 2}
+
+    warning1 = data_sufficiency.warnings[1]
+    assert warning1.qualified_name == (
+        "eemeter.caltrack_sufficiency_criteria." "too_many_days_with_missing_data"
+    )
+    assert warning1.description == (
+        "Too many days in data have missing meter data or temperature data."
+    )
+    assert warning1.data == {"n_days_total": 2, "n_valid_days": 1}
+
+    warning2 = data_sufficiency.warnings[2]
+    assert warning2.qualified_name == (
+        "eemeter.caltrack_sufficiency_criteria." "too_many_days_with_missing_meter_data"
+    )
+    assert warning2.description == ("Too many days in data have missing meter data.")
+    # zero because nan value and last point dropped
+    assert warning2.data == {"n_days_total": 2, "n_valid_meter_data_days": 1}
+
+    warning3 = data_sufficiency.warnings[3]
+    assert warning3.qualified_name == (
+        "eemeter.caltrack_sufficiency_criteria."
+        "too_many_days_with_missing_temperature_data"
+    )
+    assert warning3.description == (
+        "Too many days in data have missing temperature data."
+    )
+    assert warning3.data == {"n_days_total": 2, "n_valid_temperature_data_days": 1}
+
+def test_caltrack_sufficiency_criteria_fail_no_gap_and_not_enough_days():
     data_quality = pd.DataFrame(
         {
             "meter_value": [1, 1],
