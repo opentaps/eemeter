@@ -162,7 +162,7 @@ def test_metered_savings_cdd_hdd_billing(
         "counterfactual_usage",
         "metered_savings",
     ]
-    assert round(results.metered_savings.sum(), 2) == 1625.73
+    assert round(results.metered_savings.sum()) == 1626
     assert sorted(error_bands.keys()) == [
         "FSU Error Band",
         "OLS Error Band",
